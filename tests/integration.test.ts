@@ -25,55 +25,55 @@ describeIntegration('Integration Tests (live chain)', () => {
     retryOptions: { maxRetries: 3, baseDelayMs: 2000 },
   });
 
-  it('should connect to node and get status', async () => {
+  it('should connect to node and get status', { timeout: 30000 }, async () => {
     const status = await client.getStatus();
     expect(status.nodeInfo.network).toBeTruthy();
     expect(Number(status.syncInfo.latestBlockHeight)).toBeGreaterThan(0);
-  }, { timeout: 30000 });
+  });
 
-  it('should query balance for test address', async () => {
+  it('should query balance for test address', { timeout: 30000 }, async () => {
     const balances = await client.getBalances(TEST_ADDRESS);
     expect(Array.isArray(balances)).toBe(true);
     // Test account should have some balance
     expect(balances.length).toBeGreaterThan(0);
-  }, { timeout: 30000 });
+  });
 
-  it('should query account info', async () => {
+  it('should query account info', { timeout: 30000 }, async () => {
     const accountInfo = await client.getAccountInfo(TEST_ADDRESS);
     expect(accountInfo.address).toBeTruthy();
     expect(accountInfo.accountNumber).toBeDefined();
     expect(accountInfo.sequence).toBeDefined();
-  }, { timeout: 30000 });
+  });
 
-  it('should list validators', async () => {
+  it('should list validators', { timeout: 30000 }, async () => {
     const validators = await client.getValidators();
     expect(validators.length).toBeGreaterThan(0);
     expect(validators[0].operatorAddress).toBeTruthy();
     expect(validators[0].moniker).toBeTruthy();
-  }, { timeout: 30000 });
+  });
 
-  it('should get specific validator', async () => {
+  it('should get specific validator', { timeout: 30000 }, async () => {
     const validators = await client.getValidators();
     const first = validators[0];
     const validator = await client.getValidator(first.operatorAddress);
     expect(validator.operatorAddress).toBe(first.operatorAddress);
-  }, { timeout: 30000 });
+  });
 
-  it('should query delegations', async () => {
+  it('should query delegations', { timeout: 30000 }, async () => {
     const delegations = await client.getDelegations(TEST_ADDRESS);
     expect(Array.isArray(delegations)).toBe(true);
-  }, { timeout: 30000 });
+  });
 
-  it('should query rewards', async () => {
+  it('should query rewards', { timeout: 30000 }, async () => {
     const rewards = await client.getRewards(TEST_ADDRESS);
     expect(Array.isArray(rewards)).toBe(true);
-  }, { timeout: 30000 });
+  });
 
   // TX tests - sequential, self-transfer
   describe('Transaction broadcast', () => {
     let txHash: string;
 
-    it('should broadcast a self-transfer', async () => {
+    it('should broadcast a self-transfer', { timeout: 60000 }, async () => {
       const key = RepublicKey.fromPrivateKey(TEST_KEY);
       const address = key.getAddress();
       expect(address).toBe(TEST_ADDRESS);
@@ -93,20 +93,20 @@ describeIntegration('Integration Tests (live chain)', () => {
       expect(result.hash).toBeTruthy();
       expect(result.hash).toHaveLength(64);
       txHash = result.hash;
-    }, { timeout: 60000 });
+    });
 
-    it('should wait for TX inclusion', async () => {
+    it('should wait for TX inclusion', { timeout: 60000 }, async () => {
       expect(txHash).toBeTruthy();
       const txResponse = await client.waitForTx(txHash, 30000);
       expect(txResponse.hash).toBe(txHash);
       expect(txResponse.height).toBeTruthy();
-    }, { timeout: 60000 });
+    });
 
-    it('should query broadcasted TX', async () => {
+    it('should query broadcasted TX', { timeout: 30000 }, async () => {
       expect(txHash).toBeTruthy();
       const txResponse = await client.getTx(txHash);
       expect(txResponse.hash).toBe(txHash);
       expect(Number(txResponse.height)).toBeGreaterThan(0);
-    }, { timeout: 30000 });
+    });
   });
 });
